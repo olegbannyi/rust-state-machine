@@ -1,4 +1,4 @@
-use types::{AccountId, Balance, BlockNumber, Nonce};
+use types::{AccountId, Balance};
 
 mod balances;
 mod system;
@@ -12,7 +12,7 @@ mod types {
 
 #[derive(Debug)]
 pub struct Runtime {
-	system: system::Pallet<BlockNumber, AccountId, Nonce>,
+	system: system::Pallet<Runtime>,
 	balances: balances::Pallet<AccountId, Balance>,
 }
 
@@ -20,6 +20,12 @@ impl Runtime {
 	pub fn new() -> Self {
 		Self { system: system::Pallet::new(), balances: balances::Pallet::new() }
 	}
+}
+
+impl system::Config for Runtime {
+	type AccountId = types::AccountId;
+	type BlockNumber = types::BlockNumber;
+	type Nonce = types::Nonce;
 }
 
 fn main() {
@@ -44,5 +50,5 @@ fn main() {
 		.transfer(alice.clone(), charlie.clone(), 20)
 		.map_err(|e| eprintln!("{}", e));
 
-    println!("{:#?}", runtime);
+	println!("{:#?}", runtime);
 }
