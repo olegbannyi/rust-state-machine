@@ -1,4 +1,4 @@
-use support::{Dispatch, Extrinsic};
+use support::Dispatch;
 
 mod balances;
 mod support;
@@ -16,7 +16,9 @@ mod types {
 	pub type Block = support::Block<Header, Extrinsic>;
 }
 
-pub enum RuntimeCall {}
+pub enum RuntimeCall {
+	BalancesTransfer { to: types::AccountId, amount: types::Balance },
+}
 
 #[derive(Debug)]
 pub struct Runtime {
@@ -65,7 +67,12 @@ impl support::Dispatch for Runtime {
 	type Call = RuntimeCall;
 
 	fn dispatch(&mut self, caller: Self::Caller, call: Self::Call) -> support::DispatchResult {
-		unimplemented!()
+		match call {
+			RuntimeCall::BalancesTransfer { to, amount } => {
+				self.balances.transfer(caller, to, amount)?;
+			},
+		}
+		Ok(())
 	}
 }
 
@@ -77,19 +84,22 @@ fn main() {
 	let charlie = String::from("charlie");
 
 	runtime.balances.set_balance(&alice, 100);
-	runtime.system.inc_block_number();
 
-	runtime.system.inc_nonce(&alice);
-	let _res = runtime
-		.balances
-		.transfer(alice.clone(), bob.clone(), 30)
-		.map_err(|e| eprintln!("{}", e));
+	let block_1 = types::Block {
+		header: support::Header { block_number: 1 },
+		extrinsics: vec![
+			support::Extrinsic {
+				caller: alice.clone(),
+				call: RuntimeCall::BalancesTransfer { to: bob.clone(), amount: 30 },
+			},
+			support::Extrinsic {
+				caller: alice.clone(),
+				call: RuntimeCall::BalancesTransfer { to: charlie.clone(), amount: 20 },
+			},
+		],
+	};
 
-	runtime.system.inc_nonce(&alice);
-	let _res = runtime
-		.balances
-		.transfer(alice.clone(), charlie.clone(), 20)
-		.map_err(|e| eprintln!("{}", e));
+	runtime.execute_block(block_1).expect("Block handling error");
 
 	println!("{:#?}", runtime);
 }
