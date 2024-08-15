@@ -119,7 +119,11 @@ mod tests {
 		assert_eq!(result, Err("Fund overflow."));
 	}
 
-	fn setup() -> (Pallet<TestConfig>, <TestConfig as SystemConfig>::AccountId, <TestConfig as SystemConfig>::AccountId) {
+	fn setup() -> (
+		Pallet<TestConfig>,
+		<TestConfig as SystemConfig>::AccountId,
+		<TestConfig as SystemConfig>::AccountId,
+	) {
 		let balances = Pallet::new();
 		let alice = String::from("alice");
 		let bob = String::from("bob");
