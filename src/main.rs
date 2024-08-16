@@ -15,21 +15,28 @@ mod types {
 	pub type Extrinsic = support::Extrinsic<AccountId, RuntimeCall>;
 	pub type Header = support::Header<BlockNumber>;
 	pub type Block = support::Block<Header, Extrinsic>;
+	pub type Content = &'static str;
 }
 
 pub enum RuntimeCall {
 	Balances(balances::Call<Runtime>),
+	ProofOfExistence(proof_of_existence::Call<Runtime>),
 }
 
 #[derive(Debug)]
 pub struct Runtime {
 	system: system::Pallet<Runtime>,
 	balances: balances::Pallet<Runtime>,
+	proof_of_existence: proof_of_existence::Pallet<Runtime>,
 }
 
 impl Runtime {
 	pub fn new() -> Self {
-		Self { system: system::Pallet::new(), balances: balances::Pallet::new() }
+		Self {
+			system: system::Pallet::new(),
+			balances: balances::Pallet::new(),
+			proof_of_existence: proof_of_existence::Pallet::new(),
+		}
 	}
 
 	// Execute a block of extrinsics. Increments the block number.
@@ -62,6 +69,10 @@ impl balances::Config for Runtime {
 	type Balance = types::Balance;
 }
 
+impl proof_of_existence::Config for Runtime {
+	type Content = types::Content;
+}
+
 impl support::Dispatch for Runtime {
 	type Caller = <Runtime as system::Config>::AccountId;
 
@@ -71,6 +82,9 @@ impl support::Dispatch for Runtime {
 		match call {
 			RuntimeCall::Balances(call) => {
 				self.balances.dispatch(caller, call)?;
+			},
+			RuntimeCall::ProofOfExistence(call) => {
+				self.proof_of_existence.dispatch(caller, call)?;
 			},
 		}
 		Ok(())
