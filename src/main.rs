@@ -122,5 +122,23 @@ fn main() {
 
 	runtime.execute_block(block_1).expect("Block handling error");
 
+	let block_2 = types::Block {
+		header: support::Header { block_number: 2 },
+		extrinsics: vec![support::Extrinsic {
+			caller: alice.clone(),
+			call: RuntimeCall::ProofOfExistence(proof_of_existence::Call::CreateClaim {
+				claim: "Alice's document",
+			}),
+		},
+		support::Extrinsic {
+			caller: bob.clone(),
+			call: RuntimeCall::ProofOfExistence(proof_of_existence::Call::CreateClaim {
+				claim: "Bob's document",
+			}),
+		}],
+	};
+
+	runtime.execute_block(block_2).expect("Block handling error");
+
 	println!("{:#?}", runtime);
 }
