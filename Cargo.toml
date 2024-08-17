@@ -6,3 +6,4 @@ authors = ["Oleg Bannyi<oleg.bannyi@gmail.com>"]
 
 [dependencies]
 num = "0.4.3"
+macros = {path = "./macros/."}
