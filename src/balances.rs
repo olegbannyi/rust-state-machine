@@ -2,17 +2,10 @@ use std::collections::BTreeMap;
 
 use num::{CheckedAdd, CheckedSub, Zero};
 
-use crate::{support, system::Config as SystemConfig};
+use crate::system::Config as SystemConfig;
 
 pub trait Config: SystemConfig {
 	type Balance: CheckedSub + CheckedAdd + Zero + Copy;
-}
-
-/// A public enum which describes the calls we want to expose to the dispatcher.
-/// We should expect that the caller of each call will be provided by the dispatcher,
-/// and not included as a parameter of the call.
-pub enum Call<T: Config> {
-	Transfer { to: T::AccountId, amount: T::Balance },
 }
 
 /// This is the Balances Module
@@ -23,23 +16,8 @@ pub struct Pallet<T: Config> {
 	balances: BTreeMap<T::AccountId, T::Balance>,
 }
 
+#[macros::call]
 impl<T: Config> Pallet<T> {
-	/// Create a new instance of balance module
-	pub fn new() -> Self {
-		Self { balances: BTreeMap::new() }
-	}
-
-	/// Set the balance of an account `who` to some `amount`.
-	pub fn set_balance(&mut self, who: &T::AccountId, amount: T::Balance) {
-		self.balances.insert(who.clone(), amount);
-	}
-
-	/// Get the balance of an account `who`.
-	/// If the account has no stored balance, we return zero.
-	pub fn balance(&self, who: &T::AccountId) -> T::Balance {
-		*self.balances.get(who).unwrap_or(&T::Balance::zero())
-	}
-
 	/// Transfer `amount` from one account to another.
 	/// This function verifies that `from` has at least `amount` balance to transfer,
 	/// and that no mathematical overflows occur.
@@ -61,17 +39,21 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl <T: Config> support::Dispatch for Pallet<T> {
-	type Caller = T::AccountId;
-	type Call = Call<T>;
+impl<T: Config> Pallet<T> {
+	/// Create a new instance of balance module
+	pub fn new() -> Self {
+		Self { balances: BTreeMap::new() }
+	}
 
-	fn dispatch(&mut self, caller: Self::Caller, call: Self::Call) -> support::DispatchResult {
-		match call {
-			Call::Transfer { to, amount } => {
-				self.transfer(caller, to, amount)?;
-			},
-		}
-		Ok(())
+	/// Set the balance of an account `who` to some `amount`.
+	pub fn set_balance(&mut self, who: &T::AccountId, amount: T::Balance) {
+		self.balances.insert(who.clone(), amount);
+	}
+
+	/// Get the balance of an account `who`.
+	/// If the account has no stored balance, we return zero.
+	pub fn balance(&self, who: &T::AccountId) -> T::Balance {
+		*self.balances.get(who).unwrap_or(&T::Balance::zero())
 	}
 }
 

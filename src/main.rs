@@ -105,14 +105,14 @@ fn main() {
 		extrinsics: vec![
 			support::Extrinsic {
 				caller: alice.clone(),
-				call: RuntimeCall::Balances(balances::Call::Transfer {
+				call: RuntimeCall::Balances(balances::Call::transfer {
 					to: bob.clone(),
 					amount: 30,
 				}),
 			},
 			support::Extrinsic {
 				caller: alice.clone(),
-				call: RuntimeCall::Balances(balances::Call::Transfer {
+				call: RuntimeCall::Balances(balances::Call::transfer {
 					to: charlie.clone(),
 					amount: 20,
 				}),
@@ -124,18 +124,20 @@ fn main() {
 
 	let block_2 = types::Block {
 		header: support::Header { block_number: 2 },
-		extrinsics: vec![support::Extrinsic {
-			caller: alice.clone(),
-			call: RuntimeCall::ProofOfExistence(proof_of_existence::Call::CreateClaim {
-				claim: "Alice's document",
-			}),
-		},
-		support::Extrinsic {
-			caller: bob.clone(),
-			call: RuntimeCall::ProofOfExistence(proof_of_existence::Call::CreateClaim {
-				claim: "Bob's document",
-			}),
-		}],
+		extrinsics: vec![
+			support::Extrinsic {
+				caller: alice.clone(),
+				call: RuntimeCall::ProofOfExistence(proof_of_existence::Call::CreateClaim {
+					claim: "Alice's document",
+				}),
+			},
+			support::Extrinsic {
+				caller: bob.clone(),
+				call: RuntimeCall::ProofOfExistence(proof_of_existence::Call::CreateClaim {
+					claim: "Bob's document",
+				}),
+			},
+		],
 	};
 
 	runtime.execute_block(block_2).expect("Block handling error");
