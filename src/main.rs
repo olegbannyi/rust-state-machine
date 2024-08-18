@@ -1,47 +1,11 @@
-use support::Dispatch;
-
-mod balances;
-mod proof_of_existence;
-mod support;
-mod system;
-
-mod types {
-	use crate::{support, RuntimeCall};
-
-	pub type AccountId = String;
-	pub type Balance = u128;
-	pub type BlockNumber = u32;
-	pub type Nonce = u32;
-	pub type Extrinsic = support::Extrinsic<AccountId, RuntimeCall>;
-	pub type Header = support::Header<BlockNumber>;
-	pub type Block = support::Block<Header, Extrinsic>;
-	pub type Content = &'static str;
-}
-
-#[derive(Debug)]
-#[macros::runtime]
-pub struct Runtime {
-	system: system::Pallet<Runtime>,
-	balances: balances::Pallet<Runtime>,
-	proof_of_existence: proof_of_existence::Pallet<Runtime>,
-}
-
-impl system::Config for Runtime {
-	type AccountId = types::AccountId;
-	type BlockNumber = types::BlockNumber;
-	type Nonce = types::Nonce;
-}
-
-impl balances::Config for Runtime {
-	type Balance = types::Balance;
-}
-
-impl proof_of_existence::Config for Runtime {
-	type Content = types::Content;
-}
+use rust_state_machine::{
+	balances, proof_of_existence,
+	support::{self, Header},
+	types, Runtime, RuntimeCall,
+};
 
 fn main() {
-	let mut runtime = Runtime::new();
+	let mut runtime = Runtime::instace();
 
 	let alice = String::from("alice");
 	let bob = String::from("bob");
@@ -50,7 +14,7 @@ fn main() {
 	runtime.balances.set_balance(&alice, 100);
 
 	let block_1 = types::Block {
-		header: support::Header { block_number: 1 },
+		header: Header { block_number: 1 },
 		extrinsics: vec![
 			support::Extrinsic {
 				caller: alice.clone(),
@@ -69,10 +33,10 @@ fn main() {
 		],
 	};
 
-	runtime.execute_block(block_1).expect("Block handling error");
+	runtime.execute(block_1).expect("Block handling error");
 
 	let block_2 = types::Block {
-		header: support::Header { block_number: 2 },
+		header: Header { block_number: 2 },
 		extrinsics: vec![
 			support::Extrinsic {
 				caller: alice.clone(),
@@ -89,7 +53,7 @@ fn main() {
 		],
 	};
 
-	runtime.execute_block(block_2).expect("Block handling error");
+	runtime.execute(block_2).expect("Block handling error");
 
 	println!("{:#?}", runtime);
 }
