@@ -49,3 +49,17 @@ impl balances::Config for Runtime {
 impl proof_of_existence::Config for Runtime {
 	type Content = types::Content;
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_runtime_instance() {
+        // Act
+        let runtime = Runtime::instace();
+
+        // Assert
+        assert!(runtime.system.block_number() == 0);
+    }
+}
